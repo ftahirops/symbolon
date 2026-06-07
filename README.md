@@ -33,21 +33,26 @@ Passwords, API keys, bearer tokens and session cookies all share one fatal shape
 
 ## 🔄 How it works
 
-```mermaid
-sequenceDiagram
-    actor S as 🧑 Subject
-    participant V as 🔐 Vault (issuer)
-    participant UA as 🌐 user-agent (hostile)
-    participant Ver as 🛡 Verifier (your app)
-
-    S->>V: ① fresh local proof (biometric / PIN / passkey)
-    V->>V: ② mint + sign lease<br/>(hardware-held key, fresh ephemeral keypair)
-    V->>UA: ③ deliver lease + ephemeral private key
-    UA->>Ver: ④ present lease
-    Ver-->>UA: challenge (32 random bytes)
-    UA-->>Ver: sign challenge with ephemeral key
-    Ver->>Ver: ⑤ verify offline · enforce bindings · consume JTI
-    Ver-->>S: ✅ bounded session
+```text
+   🧑  SUBJECT  (the user)
+        │
+        │  ①  proves locally — biometric / PIN / passkey
+        ▼
+   🔐  VAULT  (issuer · hardware-backed)
+        │
+        │  ②  mints + signs the lease with its hardware key
+        │      and generates a fresh ephemeral keypair
+        ▼
+   🌐  USER-AGENT  (hostile carrier)
+        │
+        │  ③  carries the lease + ephemeral private key
+        ▼
+   🛡  VERIFIER  (your app)
+        │
+        │  ④  challenge  ⇄  signed nonce        (proof of possession)
+        │  ⑤  verify signature OFFLINE · enforce bindings · consume JTI
+        ▼
+   ✅  BOUNDED SESSION
 ```
 
 Two things **never** happen: no long-lived secret ever reaches your app, and the Verifier **never phones home** to a central authority — it checks the signature against the Vault's published public key, locally.

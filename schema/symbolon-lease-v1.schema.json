@@ -1,0 +1,142 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://symbolon.dev/schema/symbolon-lease-v1.schema.json",
+  "title": "Symbolon Login Lease v1",
+  "description": "Machine-checkable shape for a Symbolon Protocol v1 Login Lease. Tracks symbolon-protocol-v0.1.md §3. A document validating against this schema is well-formed; it still MUST be subjected to the §4 verification algorithm before any session is created.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "v",
+    "type",
+    "jti",
+    "vault_id",
+    "subject_id",
+    "app_id",
+    "device_id",
+    "not_before",
+    "not_after",
+    "max_session_ttl_sec",
+    "allowed_actions",
+    "ephemeral_pubkey",
+    "nonce_challenge_required",
+    "vault_signature"
+  ],
+  "properties": {
+    "v": {
+      "description": "Protocol version. MUST be 1 for this schema.",
+      "type": "integer",
+      "const": 1
+    },
+    "type": {
+      "description": "Discriminator. MUST be 'symbolon.lease'.",
+      "type": "string",
+      "const": "symbolon.lease"
+    },
+    "jti": {
+      "description": "Globally unique lease ID. ULID or UUIDv7.",
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 64,
+      "pattern": "^[0-9A-Za-z_-]+$"
+    },
+    "vault_id": {
+      "description": "Stable identifier for the issuing Vault. See spec §7.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "subject_id": {
+      "description": "Verifier-known Subject identifier. SHOULD be pairwise per Verifier (see open question §13.5).",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "app_id": {
+      "description": "Verifier app identifier the lease is bound to.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "device_id": {
+      "description": "Subject user-agent device identifier this lease is bound to.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "not_before": {
+      "description": "RFC 3339 timestamp, UTC, 'Z' suffix.",
+      "type": "string",
+      "format": "date-time",
+      "pattern": "Z$"
+    },
+    "not_after": {
+      "description": "RFC 3339 timestamp, UTC, 'Z' suffix. SHOULD be <= not_before + 3600s (spec §9.5).",
+      "type": "string",
+      "format": "date-time",
+      "pattern": "Z$"
+    },
+    "max_session_ttl_sec": {
+      "description": "Hard cap (seconds) for the session the Verifier may create.",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 86400
+    },
+    "allowed_actions": {
+      "description": "Action scope. Use ['*'] for unrestricted within app_id.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128
+      }
+    },
+    "geo_constraint": {
+      "description": "Optional geographic / network constraint. If present, the request origin MUST match every non-empty subfield (AND across subfields, OR within each subfield).",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "countries": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$"
+          }
+        },
+        "asns": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4294967295
+          }
+        },
+        "ip_cidrs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^([0-9.]+|[0-9a-fA-F:]+)/[0-9]+$"
+          }
+        }
+      }
+    },
+    "ephemeral_pubkey": {
+      "description": "Ed25519 public key for this lease, multibase base58btc ('z' prefix).",
+      "type": "string",
+      "pattern": "^z[1-9A-HJ-NP-Za-km-z]{40,80}$"
+    },
+    "nonce_challenge_required": {
+      "description": "If true, Verifier MUST issue a random challenge and require a signature with the matching ephemeral private key.",
+      "type": "boolean"
+    },
+    "extensions": {
+      "description": "Implementation-defined fields. Unknown extension keys MUST be ignored by Verifiers.",
+      "type": "object"
+    },
+    "vault_signature": {
+      "description": "Ed25519 signature over the JCS (RFC 8785) canonicalization of this object with vault_signature removed. Multibase base58btc ('z' prefix).",
+      "type": "string",
+      "pattern": "^z[1-9A-HJ-NP-Za-km-z]{80,120}$"
+    }
+  }
+}

@@ -1,0 +1,13 @@
+# local tooling / artifacts
+.claude/
+.playwright-mcp/
+*.log
+
+# stray local screenshots (showcase/shots/ is kept)
+/hero.jpeg
+/sim.jpeg
+/verdict.jpeg
+
+# internal ecosystem docs — reference unreleased products (xhelix/xgenguardian); not for public repo
+docs/auth-attack-coverage-scorecard.md
+docs/ecosystem-security-verdict.md
